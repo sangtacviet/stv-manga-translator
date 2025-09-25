@@ -1,0 +1,15 @@
+{
+  "name": "stv-manga-translator",
+  "version": "0.1.0",
+  "description": "Tampermonkey userscript bundler for STV manga translator plugins.",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.22.10",
+    "@babel/core": "^7.22.10",
+    "@babel/preset-env": "^7.22.10"
+  }
+}
