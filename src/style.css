@@ -1,0 +1,258 @@
+.stv-translate-button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 10px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000000;
+}
+.stv-translate-button:hover {
+    background-color: #45a049;
+}
+
+.stv-manga-translator-screen {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10000000;
+    display: none;
+}
+
+.stv-translator-window * {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.stv-translator-window {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 1200px;
+    height: 90%;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.stv-translator-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stv-translator-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.stv-translator-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.stv-settings-button, .stv-close-button {
+    background: none;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.stv-settings-button:hover {
+    background-color: #e9ecef;
+}
+
+.stv-close-button:hover {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.stv-translator-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.stv-translator-field {
+    flex: 1;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.stv-manga-translator-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: #ffffff;
+}
+
+.stv-translation-area {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    background-color: #fafafa;
+}
+
+.stv-translation-area:focus {
+    border-color: #4CAF50;
+    background-color: #ffffff;
+}
+
+.stv-settings-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100%;
+    background-color: #f8f9fa;
+    border-left: 1px solid #dee2e6;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    z-index: 1;
+}
+
+.stv-settings-panel.open {
+    transform: translateX(0);
+}
+
+.stv-settings-header {
+    padding: 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+}
+
+.stv-settings-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.stv-settings-content {
+    padding: 20px;
+}
+
+.stv-setting-group {
+    margin-bottom: 25px;
+}
+
+.stv-setting-label {
+    display: block;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.stv-setting-select, .stv-setting-input, .stv-setting-range {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.stv-setting-select:focus, .stv-setting-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.stv-setting-range {
+    appearance: none;
+    height: 6px;
+    background: #ddd;
+    border: none;
+}
+
+.stv-setting-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #4CAF50;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.stv-range-display {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.stv-api-key-group {
+    border-top: 1px solid #dee2e6;
+    padding-top: 20px;
+    margin-top: 25px;
+}
+
+.stv-setting-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.stv-radio-group {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.stv-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.stv-radio-option input[type="radio"] {
+    margin: 0;
+    width: auto;
+}
+
+.stv-radio-option label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+

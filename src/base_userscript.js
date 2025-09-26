@@ -1,8 +1,16 @@
 {{HEADER}}
 
 (function() {
+
     {{CLASS}}
 
+    const cssStyle = `{{CSS}}`;
+    const injectStyle = (css) => {
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.appendChild(document.createTextNode(css));
+        document.head.appendChild(style);
+    }
     const pluginManager = new PluginManager();
 
     {{PLUGINS}}
@@ -15,6 +23,8 @@
             if (imageUrls && imageUrls.length > 0) {
                 console.log(`Found ${imageUrls.length} image(s) to translate:`, imageUrls);
                 // Here you can add code to process the image URLs, e.g., send them for translation
+                injectStyle(cssStyle);
+                TranslateButton.showTranslateButton(imageUrls);
             } else {
                 console.log('No images found by the plugin.');
             }

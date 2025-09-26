@@ -7,10 +7,16 @@ if (!fs.existsSync(outDir)) {
 	fs.mkdirSync(outDir);
 }
 
+function minifyCss(css) {
+	return css.replace(/\s+/g, ' ').replace(/\/\*.*?\*\//g, '').trim();
+}
 function build() {
 	let baseScript = fs.readFileSync(path.join(srcDir, 'base_userscript.js'), 'utf-8');
 	let header = fs.readFileSync(path.join(srcDir, 'header.js'), 'utf-8');
 	let classCode = fs.readFileSync(path.join(srcDir, 'class.js'), 'utf-8');
+	let style = fs.readFileSync(path.join(srcDir, 'style.css'), 'utf-8').replace(/`/g, '');
+	style = minifyCss(style);
+	// Read all plugin files
 	let plugins = fs.readdirSync(path.join(srcDir, 'plugins'))
 		.filter(file => file.endsWith('.js'))
 		.map(file => fs.readFileSync(path.join(srcDir, 'plugins', file), 'utf-8'))
@@ -18,6 +24,7 @@ function build() {
 	let finalScript = baseScript
 		.replace('{{HEADER}}', header)
 		.replace('{{CLASS}}', classCode)
+		.replace('{{CSS}}', style)
 		.replace('{{PLUGINS}}', plugins);
 	fs.writeFileSync(path.join(outDir, 'stv_manga_translator.user.js'), finalScript, 'utf-8');
 	console.log('Build complete: dist/stv_manga_translator.user.js');
