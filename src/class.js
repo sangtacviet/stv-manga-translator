@@ -537,6 +537,10 @@ class MangaTranslator {
         await this.isLoaded;
         this.frame.contentWindow.postMessage({ type: "setTargetLanguage", targetLanguage: lang }, "*");
     }
+    async setPageWidth(width) {
+        await this.isLoaded;
+        this.frame.contentWindow.postMessage({ type: "setPageWidth", width: width }, "*");
+    }
     init() {
         // Called after rendered
         const src = "https://sangtacviet.app/comictranslator.php?isolated=true&langhint=auto";

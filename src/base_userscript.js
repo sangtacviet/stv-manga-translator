@@ -19,18 +19,22 @@
     const matchedPlugin = pluginManager.findPluginForUrl(pageUrl);
     if (matchedPlugin) {
         console.log(`Running plugin: ${matchedPlugin.meta.name} (v${matchedPlugin.meta.version})`);
-        matchedPlugin.run().then(imageUrls => {
-            if (imageUrls && imageUrls.length > 0) {
-                console.log(`Found ${imageUrls.length} image(s) to translate:`, imageUrls);
-                // Here you can add code to process the image URLs, e.g., send them for translation
-                injectStyle(cssStyle);
-                TranslateButton.showTranslateButton(imageUrls);
-            } else {
-                console.log('No images found by the plugin.');
-            }
-        }).catch(err => {
-            console.error('Error running plugin:', err);
-        });
+        try {
+            matchedPlugin.run().then(images => {
+                if (images && images.length > 0) {
+                    console.log(`Found ${images.length} image(s) to translate:`, images);
+                    // Here you can add code to process the image URLs, e.g., send them for translation
+                    injectStyle(cssStyle);
+                    TranslateButton.showTranslateButton(images);
+                } else {
+                    console.log('No images found by the plugin.');
+                }
+            }).catch(err => {
+                console.error('Error running plugin:', err);
+            });
+        } catch (err) {
+            console.error('Error executing plugin:', err);
+        }
     } else {
         console.log('No matching plugin found for this URL.'); // Will be silent in future versions, currently for debugging purposes
     }
