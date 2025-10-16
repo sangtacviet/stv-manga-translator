@@ -506,6 +506,7 @@ class MangaTranslator {
         this.isLoaded = new Promise((resolve) => {
             this._resolveLoaded = resolve;
         });
+        this.lazyImages = []; // Store lazy images for on-demand loading
         let frame = this.frame = document.createElement('iframe');
         frame.id = 'stv-manga-translator-frame';
         frame.className = 'stv-manga-translator-frame';
@@ -517,16 +518,73 @@ class MangaTranslator {
         frame.reload = function() {
             frame.src = frame.src; // Reload the iframe
         }
+        // Set up message listener for lazy image requests from subframe
+        this.setupMessageListener();
+    }
+    
+    setupMessageListener() {
+        window.addEventListener('message', async (event) => {
+            // Verify the message is from our iframe
+            if (event.source !== this.frame.contentWindow) {
+                return;
+            }
+            
+            // Handle lazy image data request
+            if (event.data && event.data.type === 'requestlazyimgdata') {
+                const index = event.data.index;
+                if (index !== undefined && index >= 0 && index < this.lazyImages.length) {
+                    try {
+                        const lazyImage = this.lazyImages[index];
+                        let imageData = null;
+                        
+                        if (lazyImage instanceof LazyImageSrc) {
+                            // Load the image and convert to data URL
+                            const img = await lazyImage.loadImage();
+                            
+                            // Create a canvas to convert image to data URL
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.naturalWidth || img.width;
+                            canvas.height = img.naturalHeight || img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            imageData = canvas.toDataURL('image/png');
+                        } else if (typeof lazyImage === 'string') {
+                            // If it's already a URL string, use it directly
+                            imageData = lazyImage;
+                        }
+                        
+                        // Send back the image data to the subframe
+                        this.frame.contentWindow.postMessage({
+                            type: 'lazyimgdata',
+                            index: index,
+                            data: imageData
+                        }, '*');
+                    } catch (error) {
+                        console.error('Error loading lazy image at index', index, error);
+                        // Send error response
+                        this.frame.contentWindow.postMessage({
+                            type: 'lazyimgdata',
+                            index: index,
+                            error: error.message
+                        }, '*');
+                    }
+                }
+            }
+        });
     }
     render() {
         return this.frame;
     }
     async setImages(imgs) {
         await this.isLoaded;
+        // Store lazy images for on-demand loading
+        this.lazyImages = imgs;
         this.frame.contentWindow.postMessage({ type: "setComicImgs", data: imgs }, "*");
     }
     async setImageUrls(imageUrls) {
         await this.isLoaded;
+        // Store image URLs for on-demand loading
+        this.lazyImages = imageUrls;
         this.frame.contentWindow.postMessage({ type: "setComicImgUrls", data: imageUrls }, "*");
     }
     async setOriginalLanguage(lang) {
