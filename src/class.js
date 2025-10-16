@@ -592,25 +592,25 @@ class MangaTranslator {
         await this.isLoaded;
         // Store lazy images for on-demand loading
         this.lazyImages = imgs;
-        this.frame.contentWindow.postMessage({ type: "setComicImgs", data: imgs }, "*");
+        this.frame.contentWindow.postMessage({ type: "setComicImgs", data: imgs }, this.iframeOrigin);
     }
     async setImageUrls(imageUrls) {
         await this.isLoaded;
         // Store image URLs for on-demand loading
         this.lazyImages = imageUrls;
-        this.frame.contentWindow.postMessage({ type: "setComicImgUrls", data: imageUrls }, "*");
+        this.frame.contentWindow.postMessage({ type: "setComicImgUrls", data: imageUrls }, this.iframeOrigin);
     }
     async setOriginalLanguage(lang) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setOriginalLanguage", originalLanguage: lang }, "*");
+        this.frame.contentWindow.postMessage({ type: "setOriginalLanguage", originalLanguage: lang }, this.iframeOrigin);
     }
     async setTargetLanguage(lang) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setTargetLanguage", targetLanguage: lang }, "*");
+        this.frame.contentWindow.postMessage({ type: "setTargetLanguage", targetLanguage: lang }, this.iframeOrigin);
     }
     async setPageWidth(width) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setPageWidth", width: width }, "*");
+        this.frame.contentWindow.postMessage({ type: "setPageWidth", width: width }, this.iframeOrigin);
     }
     init() {
         // Called after rendered
