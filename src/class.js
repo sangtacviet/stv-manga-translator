@@ -235,7 +235,10 @@ class TranslateWindow {
         if (screen) {
             screen.remove();
         }
-        // Clean up translator
+        // Clean up translator and remove event listeners
+        if (TranslateWindow.translator) {
+            TranslateWindow.translator.cleanup();
+        }
         TranslateWindow.translator = null;
     }
 
@@ -506,6 +509,8 @@ class MangaTranslator {
         this.isLoaded = new Promise((resolve) => {
             this._resolveLoaded = resolve;
         });
+        this.lazyImages = []; // Store lazy images for on-demand loading
+        this.iframeOrigin = 'https://sangtacviet.app'; // Expected iframe origin
         let frame = this.frame = document.createElement('iframe');
         frame.id = 'stv-manga-translator-frame';
         frame.className = 'stv-manga-translator-frame';
@@ -517,29 +522,95 @@ class MangaTranslator {
         frame.reload = function() {
             frame.src = frame.src; // Reload the iframe
         }
+        // Set up message listener for lazy image requests from subframe
+        this.setupMessageListener();
+    }
+    
+    setupMessageListener() {
+        this.messageHandler = async (event) => {
+            // Verify the message is from our iframe and the expected origin
+            if (event.source !== this.frame.contentWindow || event.origin !== this.iframeOrigin) {
+                return;
+            }
+            
+            // Handle lazy image data request
+            if (event.data && event.data.type === 'requestlazyimgdata') {
+                const index = event.data.index;
+                if (index !== undefined && index >= 0 && index < this.lazyImages.length) {
+                    try {
+                        const lazyImage = this.lazyImages[index];
+                        let imageData = null;
+                        
+                        if (lazyImage instanceof LazyImageSrc) {
+                            // Load the image and convert to data URL
+                            const img = await lazyImage.loadImage();
+                            
+                            // Create a canvas to convert image to data URL
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.naturalWidth || img.width;
+                            canvas.height = img.naturalHeight || img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            imageData = canvas.toDataURL('image/png');
+                        } else if (typeof lazyImage === 'string') {
+                            // If it's already a URL string, use it directly
+                            imageData = lazyImage;
+                        }
+                        
+                        // Send back the image data to the subframe
+                        this.frame.contentWindow.postMessage({
+                            type: 'lazyimgdata',
+                            index: index,
+                            data: imageData
+                        }, this.iframeOrigin);
+                    } catch (error) {
+                        console.error('Error loading lazy image at index', index, error);
+                        // Send error response
+                        this.frame.contentWindow.postMessage({
+                            type: 'lazyimgdata',
+                            index: index,
+                            error: error.message
+                        }, this.iframeOrigin);
+                    }
+                }
+            }
+        };
+        window.addEventListener('message', this.messageHandler);
+    }
+    
+    cleanup() {
+        // Remove message listener to prevent memory leaks
+        if (this.messageHandler) {
+            window.removeEventListener('message', this.messageHandler);
+            this.messageHandler = null;
+        }
     }
     render() {
         return this.frame;
     }
     async setImages(imgs) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setComicImgs", data: imgs }, "*");
+        // Store lazy images for on-demand loading
+        this.lazyImages = imgs;
+        this.frame.contentWindow.postMessage({ type: "setComicImgs", data: imgs }, this.iframeOrigin);
     }
     async setImageUrls(imageUrls) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setComicImgUrls", data: imageUrls }, "*");
+        // Store image URLs for on-demand loading
+        this.lazyImages = imageUrls;
+        this.frame.contentWindow.postMessage({ type: "setComicImgUrls", data: imageUrls }, this.iframeOrigin);
     }
     async setOriginalLanguage(lang) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setOriginalLanguage", originalLanguage: lang }, "*");
+        this.frame.contentWindow.postMessage({ type: "setOriginalLanguage", originalLanguage: lang }, this.iframeOrigin);
     }
     async setTargetLanguage(lang) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setTargetLanguage", targetLanguage: lang }, "*");
+        this.frame.contentWindow.postMessage({ type: "setTargetLanguage", targetLanguage: lang }, this.iframeOrigin);
     }
     async setPageWidth(width) {
         await this.isLoaded;
-        this.frame.contentWindow.postMessage({ type: "setPageWidth", width: width }, "*");
+        this.frame.contentWindow.postMessage({ type: "setPageWidth", width: width }, this.iframeOrigin);
     }
     init() {
         // Called after rendered
