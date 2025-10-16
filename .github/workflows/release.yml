@@ -1,5 +1,8 @@
 name: Build and Release Userscript
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ "main" ]
