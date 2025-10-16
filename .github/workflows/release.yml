@@ -1,0 +1,57 @@
+name: Build and Release Userscript
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Build
+      run: |
+        npm install
+        npm run build
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build  
+    if: github.ref == 'refs/heads/main' 
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up date-based version
+      id: version
+      run: |
+        VERSION=$(date +"%Y.%m.%d-%Hh")
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Rebuild to ensure dist/ exists
+      run: |
+        npm install
+        npm run build
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.VERSION }}
+        name: Release ${{ steps.version.outputs.VERSION }}
+        files: |
+          ./dist/stv_manga_translator.user.js
+          ./dist/stv_manga_translator.user.min.js
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
