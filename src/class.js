@@ -235,7 +235,10 @@ class TranslateWindow {
         if (screen) {
             screen.remove();
         }
-        // Clean up translator
+        // Clean up translator and remove event listeners
+        if (TranslateWindow.translator) {
+            TranslateWindow.translator.cleanup();
+        }
         TranslateWindow.translator = null;
     }
 
@@ -507,6 +510,7 @@ class MangaTranslator {
             this._resolveLoaded = resolve;
         });
         this.lazyImages = []; // Store lazy images for on-demand loading
+        this.iframeOrigin = 'https://sangtacviet.app'; // Expected iframe origin
         let frame = this.frame = document.createElement('iframe');
         frame.id = 'stv-manga-translator-frame';
         frame.className = 'stv-manga-translator-frame';
@@ -523,9 +527,9 @@ class MangaTranslator {
     }
     
     setupMessageListener() {
-        window.addEventListener('message', async (event) => {
-            // Verify the message is from our iframe
-            if (event.source !== this.frame.contentWindow) {
+        this.messageHandler = async (event) => {
+            // Verify the message is from our iframe and the expected origin
+            if (event.source !== this.frame.contentWindow || event.origin !== this.iframeOrigin) {
                 return;
             }
             
@@ -558,7 +562,7 @@ class MangaTranslator {
                             type: 'lazyimgdata',
                             index: index,
                             data: imageData
-                        }, '*');
+                        }, this.iframeOrigin);
                     } catch (error) {
                         console.error('Error loading lazy image at index', index, error);
                         // Send error response
@@ -566,11 +570,20 @@ class MangaTranslator {
                             type: 'lazyimgdata',
                             index: index,
                             error: error.message
-                        }, '*');
+                        }, this.iframeOrigin);
                     }
                 }
             }
-        });
+        };
+        window.addEventListener('message', this.messageHandler);
+    }
+    
+    cleanup() {
+        // Remove message listener to prevent memory leaks
+        if (this.messageHandler) {
+            window.removeEventListener('message', this.messageHandler);
+            this.messageHandler = null;
+        }
     }
     render() {
         return this.frame;
